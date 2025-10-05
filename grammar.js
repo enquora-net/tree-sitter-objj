@@ -70,10 +70,11 @@ module.exports = grammar(JAVASCRIPT, {
   ],
 
   rules: {
-    // Make @import a valid statement (and thus valid at the top level)
+    // Make Objective-J forms valid statements (and thus valid at the top level)
     statement: ($, original) => choice(
       original,
-      $.objj_import
+      $.objj_import,
+      $.objj_typedef
     ),
 
     // Objective-J imports:
@@ -82,7 +83,6 @@ module.exports = grammar(JAVASCRIPT, {
     //
     // Note: Do NOT consume an optional semicolon here. If present in source,
     // it will be parsed as a separate empty statement by the JS grammar.
-    // This avoids an ambiguity with empty statements.
     objj_import: $ => prec.dynamic(100, seq(
       '@import',
       field('path', choice(
@@ -91,6 +91,15 @@ module.exports = grammar(JAVASCRIPT, {
       ))
     )),
 
+    // Objective-J typedef:
+    //   @typedef CPModalSession
+    //
+    // Also do not consume a trailing semicolon to avoid ambiguity.
+    objj_typedef: $ => seq(
+      '@typedef',
+      field('name', $.identifier)
+    ),
+
     // Single token for angle-bracket system-style import path
     system_lib_string: $ => token(seq(
       '<',
@@ -98,7 +107,7 @@ module.exports = grammar(JAVASCRIPT, {
       '>'
     )),
 
-    // Suppress decorators to avoid conflicts with @import
+    // Suppress decorators to avoid conflicts with @-prefixed constructs
     decorator: $ => choice(),
 
     // Suppress JSX entirely in this dialect
