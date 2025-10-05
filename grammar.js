@@ -78,6 +78,12 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_protocol_declaration
     ),
 
+    // Extend expressions to support Objective-J @"..." boxed strings
+    primary_expression: ($, original) => choice(
+      original,
+      $.objj_string_literal
+    ),
+
     // Objective-J imports:
     //   @import <Foundation/CPBundle.j>
     //   @import "CPApplication_Constants.j"
@@ -124,6 +130,12 @@ module.exports = grammar(JAVASCRIPT, {
       '<',
       commaSep1($.identifier),
       '>'
+    ),
+
+    // Objective-J boxed string literal: @"..."
+    objj_string_literal: $ => seq(
+      '@',
+      $.string
     ),
 
     // Single token for angle-bracket system-style import path
