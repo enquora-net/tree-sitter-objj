@@ -12,6 +12,12 @@ const JAVASCRIPT = require("tree-sitter-javascript/grammar.js");
 module.exports = grammar(JAVASCRIPT, {
   name: "objj",
 
+  extras: $ => [
+    // Whitespace and line endings
+    /\u00A0|\s|\\\r?\n/,
+    $.comment
+  ],
+
   rules: {
     // TODO: add the actual grammar rules
   }
