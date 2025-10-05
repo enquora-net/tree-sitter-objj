@@ -69,6 +69,11 @@ module.exports = grammar(JAVASCRIPT, {
     $.comment
   ],
 
+  // Help the parser disambiguate “[ … ]” between arrays and ObjJ messages
+  conflicts: ($, original) => original.concat([
+    [$.objj_message_expression, $.array],
+  ]),
+
   rules: {
     // Make Objective-J forms valid statements (and thus valid at the top level)
     statement: ($, original) => choice(
@@ -79,10 +84,11 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_class_implementation
     ),
 
-    // Extend expressions to support Objective-J @"..." boxed strings
+    // Extend expressions to support Objective-J constructs
     primary_expression: ($, original) => choice(
       original,
-      $.objj_string_literal
+      $.objj_string_literal,
+      $.objj_message_expression
     ),
 
     // Objective-J imports:
@@ -136,11 +142,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     // Objective-J class implementation:
     //   @implementation ClassName : Superclass
-    //   {
-    //     Type name;
-    //     id <Protocol> name;
-    //     Type name @accessors(...);
-    //   }
+    //   { ... ivars ... }
     //   ... methods ...
     //   @end
     objj_class_implementation: $ => seq(
@@ -252,6 +254,32 @@ module.exports = grammar(JAVASCRIPT, {
       ':',
       optional(field('param_type', $.objj_method_type)),
       field('param_name', $.identifier)
+    ),
+
+    // Objective-J message expression:
+    //   [ receiver selector ]
+    // Examples:
+    //   [self init]
+    //   [[self alloc] init]
+    //   [obj setValue:val forKey:key]
+    objj_message_expression: $ => seq(
+      '[',
+      field('receiver', $.expression),
+      field('selector', $.objj_message_selector),
+      ']'
+    ),
+
+    objj_message_selector: $ => choice(
+      // Unary selector
+      $.identifier,
+      // Keyword selector with one or more parts
+      repeat1($.objj_message_keyword_argument)
+    ),
+
+    objj_message_keyword_argument: $ => seq(
+      field('keyword', $.identifier),
+      ':',
+      field('argument', $.expression)
     ),
 
     // Single token for angle-bracket system-style import path
