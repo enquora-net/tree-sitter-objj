@@ -81,7 +81,8 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_import,
       $.objj_typedef,
       $.objj_protocol_declaration,
-      $.objj_class_implementation
+      $.objj_class_implementation,
+      $.preproc_directive
     ),
 
     // Extend expressions to support Objective-J constructs
@@ -300,9 +301,12 @@ module.exports = grammar(JAVASCRIPT, {
     objj_selector_name: $ => choice(
       // Unary selector like "alloc"
       $.objj_selector_identifier,
-      // One or more keyword parts like "applicationWillFinishLaunching:" or "setValue:forKey:"
+      // One or more keyword parts like "applicationWillFinishLaunching:" etc.
       repeat1(seq($.objj_selector_identifier, ':'))
     ),
+
+    // Preprocessor directives: consume an entire line starting with '#'
+    preproc_directive: _ => token(seq('#', /[^\n]*/)),
 
     // Single token for angle-bracket system-style import path
     system_lib_string: $ => token(seq(
