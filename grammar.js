@@ -237,8 +237,8 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_method_type: $ => seq(
       '(',
-      // Keep this liberal for now: identifiers or 'void' are typical here.
-      field('type', choice($.identifier, 'void')),
+      // Allow ObjJ types here, including protocol-qualified ones, or 'void'
+      field('type', choice($.objj_type, 'void')),
       ')'
     ),
 
