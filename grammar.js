@@ -88,7 +88,8 @@ module.exports = grammar(JAVASCRIPT, {
     primary_expression: ($, original) => choice(
       original,
       $.objj_string_literal,
-      $.objj_message_expression
+      $.objj_message_expression,
+      $.objj_selector_expression
     ),
 
     // Objective-J imports:
@@ -286,6 +287,21 @@ module.exports = grammar(JAVASCRIPT, {
       field('keyword', $.objj_selector_identifier),
       ':',
       field('argument', $.expression)
+    ),
+
+    // Objective-J selector expression: @selector(name) or @selector(name:part:)
+    objj_selector_expression: $ => seq(
+      '@selector',
+      '(',
+      $.objj_selector_name,
+      ')'
+    ),
+
+    objj_selector_name: $ => choice(
+      // Unary selector like "alloc"
+      $.objj_selector_identifier,
+      // One or more keyword parts like "applicationWillFinishLaunching:" or "setValue:forKey:"
+      repeat1(seq($.objj_selector_identifier, ':'))
     ),
 
     // Single token for angle-bracket system-style import path
