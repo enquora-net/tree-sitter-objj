@@ -110,10 +110,11 @@ module.exports = grammar(JAVASCRIPT, {
     // Objective-J protocol declaration:
     //   @protocol CPApplicationDelegate <CPObject>
     //     @optional
+    //     - (ReturnType)name:(ParamType)param;
     //     ...
     //   @end
     //
-    // Body is permissive for now; we’ll refine with method/property rules later.
+    // Body accepts @optional/@required directives and method declarations.
     objj_protocol_declaration: $ => seq(
       '@protocol',
       field('name', $.identifier),
@@ -121,7 +122,7 @@ module.exports = grammar(JAVASCRIPT, {
       repeat(choice(
         '@optional',
         '@required',
-        $.statement // allow JS statements for now; ObjJ members will come later
+        $.objj_method_declaration
       )),
       '@end'
     ),
@@ -136,6 +137,38 @@ module.exports = grammar(JAVASCRIPT, {
     objj_string_literal: $ => seq(
       '@',
       $.string
+    ),
+
+    // Objective-J method declaration (interface/protocol form)
+    //   - (ReturnType)method;
+    //   - (ReturnType)name:(ParamType)param;
+    //   - (ReturnType)name:(ParamType)param other:(ParamType)otherParam;
+    objj_method_declaration: $ => seq(
+      field('scope', choice('+', '-')),
+      optional(field('return_type', $.objj_method_type)),
+      field('selector', $.objj_method_selector),
+      ';'
+    ),
+
+    objj_method_type: $ => seq(
+      '(',
+      // Keep this liberal for now: identifiers or 'void' are typical here.
+      field('type', choice($.identifier, 'void')),
+      ')'
+    ),
+
+    objj_method_selector: $ => choice(
+      // Unary selector: - (ReturnType)name;
+      $.identifier,
+      // Keyword selector: one or more keyword parts
+      repeat1($.objj_keyword_declarator)
+    ),
+
+    objj_keyword_declarator: $ => seq(
+      field('keyword', $.identifier),
+      ':',
+      optional(field('param_type', $.objj_method_type)),
+      field('param_name', $.identifier)
     ),
 
     // Single token for angle-bracket system-style import path
