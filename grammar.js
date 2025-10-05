@@ -74,7 +74,8 @@ module.exports = grammar(JAVASCRIPT, {
     statement: ($, original) => choice(
       original,
       $.objj_import,
-      $.objj_typedef
+      $.objj_typedef,
+      $.objj_protocol_declaration
     ),
 
     // Objective-J imports:
@@ -98,6 +99,31 @@ module.exports = grammar(JAVASCRIPT, {
     objj_typedef: $ => seq(
       '@typedef',
       field('name', $.identifier)
+    ),
+
+    // Objective-J protocol declaration:
+    //   @protocol CPApplicationDelegate <CPObject>
+    //     @optional
+    //     ...
+    //   @end
+    //
+    // Body is permissive for now; we’ll refine with method/property rules later.
+    objj_protocol_declaration: $ => seq(
+      '@protocol',
+      field('name', $.identifier),
+      optional(field('protocols', $.objj_protocol_reference_list)),
+      repeat(choice(
+        '@optional',
+        '@required',
+        $.statement // allow JS statements for now; ObjJ members will come later
+      )),
+      '@end'
+    ),
+
+    objj_protocol_reference_list: $ => seq(
+      '<',
+      commaSep1($.identifier),
+      '>'
     ),
 
     // Single token for angle-bracket system-style import path
