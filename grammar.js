@@ -75,7 +75,8 @@ module.exports = grammar(JAVASCRIPT, {
       original,
       $.objj_import,
       $.objj_typedef,
-      $.objj_protocol_declaration
+      $.objj_protocol_declaration,
+      $.objj_class_implementation
     ),
 
     // Extend expressions to support Objective-J @"..." boxed strings
@@ -133,6 +134,79 @@ module.exports = grammar(JAVASCRIPT, {
       '>'
     ),
 
+    // Objective-J class implementation:
+    //   @implementation ClassName : Superclass
+    //   {
+    //     Type name;
+    //     id <Protocol> name;
+    //     Type name @accessors(...);
+    //   }
+    //   ... methods ...
+    //   @end
+    objj_class_implementation: $ => seq(
+      '@implementation',
+      field('name', $.identifier),
+      optional(seq(':', field('superclass', $.identifier))),
+      optional($.objj_instance_variables),
+      repeat($.objj_implementation_member),
+      '@end'
+    ),
+
+    objj_instance_variables: $ => seq(
+      '{',
+      repeat($.objj_instance_variable),
+      '}'
+    ),
+
+    objj_instance_variable: $ => choice(
+      $.objj_visibility_specifier,
+      $.objj_field_definition
+    ),
+
+    objj_visibility_specifier: _ => choice(
+      '@private',
+      '@protected',
+      '@package',
+      '@public'
+    ),
+
+    objj_field_definition: $ => seq(
+      field('type', $.objj_type),
+      field('name', $.identifier),
+      optional(field('accessors', $.objj_accessors_directive)),
+      ';'
+    ),
+
+    // Liberal type rule: simple identifier or protocol-qualified type
+    objj_type: $ => choice(
+      $.identifier,
+      $.objj_protocol_type
+    ),
+
+    objj_protocol_type: $ => seq(
+      $.identifier,
+      $.objj_protocol_reference_list
+    ),
+
+    objj_accessors_directive: $ => seq(
+      '@accessors',
+      '(',
+      commaSep1($.objj_accessor_attribute),
+      ')'
+    ),
+
+    objj_accessor_attribute: $ => choice(
+      // property=themeBlend, getter=name, setter=name
+      seq($.identifier, '=', $.identifier),
+      // standalone attributes if needed
+      $.identifier
+    ),
+
+    // Implementation members: for now, support method definitions.
+    objj_implementation_member: $ => choice(
+      $.objj_method_definition
+    ),
+
     // Objective-J boxed string literal: @"..."
     objj_string_literal: $ => seq(
       '@',
@@ -148,6 +222,15 @@ module.exports = grammar(JAVASCRIPT, {
       optional(field('return_type', $.objj_method_type)),
       field('selector', $.objj_method_selector),
       ';'
+    ),
+
+    // Objective-J method definition (implementation form)
+    //   - (ReturnType)name:(ParamType)param { ... }
+    objj_method_definition: $ => seq(
+      field('scope', choice('+', '-')),
+      optional(field('return_type', $.objj_method_type)),
+      field('selector', $.objj_method_selector),
+      field('body', $.statement_block)
     ),
 
     objj_method_type: $ => seq(
