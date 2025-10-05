@@ -242,15 +242,21 @@ module.exports = grammar(JAVASCRIPT, {
       ')'
     ),
 
+    // Accept reserved words like `null` as selector identifiers in ObjJ
+    objj_selector_identifier: $ => choice(
+      $.identifier,
+      alias($.null, $.identifier)
+    ),
+
     objj_method_selector: $ => choice(
       // Unary selector: - (ReturnType)name;
-      $.identifier,
+      $.objj_selector_identifier,
       // Keyword selector: one or more keyword parts
       repeat1($.objj_keyword_declarator)
     ),
 
     objj_keyword_declarator: $ => seq(
-      field('keyword', $.identifier),
+      field('keyword', $.objj_selector_identifier),
       ':',
       optional(field('param_type', $.objj_method_type)),
       field('param_name', $.identifier)
@@ -262,22 +268,22 @@ module.exports = grammar(JAVASCRIPT, {
     //   [self init]
     //   [[self alloc] init]
     //   [obj setValue:val forKey:key]
-    objj_message_expression: $ => seq(
+    objj_message_expression: $ => prec.dynamic(100, seq(
       '[',
       field('receiver', $.expression),
       field('selector', $.objj_message_selector),
       ']'
-    ),
+    )),
 
     objj_message_selector: $ => choice(
       // Unary selector
-      $.identifier,
+      $.objj_selector_identifier,
       // Keyword selector with one or more parts
       repeat1($.objj_message_keyword_argument)
     ),
 
     objj_message_keyword_argument: $ => seq(
-      field('keyword', $.identifier),
+      field('keyword', $.objj_selector_identifier),
       ':',
       field('argument', $.expression)
     ),
