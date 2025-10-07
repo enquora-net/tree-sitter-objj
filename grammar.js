@@ -85,6 +85,7 @@ module.exports = grammar(JAVASCRIPT, {
   // Help the parser disambiguate “[ … ]” between arrays and ObjJ messages
   conflicts: ($, original) => original.concat([
     [$.objj_message_expression, $.array],
+    [$.statement, $.preproc_if_block],
   ]),
 
   rules: {
@@ -95,6 +96,7 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_typedef,
       $.objj_protocol_declaration,
       $.objj_class_implementation,
+      $.preproc_if_block,
       $.preproc_directive
     ),
 
@@ -318,7 +320,73 @@ module.exports = grammar(JAVASCRIPT, {
       repeat1(seq($.objj_selector_identifier, ':'))
     ),
 
-    // Preprocessor directives: consume an entire line starting with '#'
+    // -------------------------------------------------------------------------
+    // Preprocessor: minimal structured #if ... #else ... #endif with parsed condition
+    // -------------------------------------------------------------------------
+preproc_if_block: $ => seq(
+      field('if', $.preproc_if_line),
+      // Body of the 'if' branch
+      repeat(choice(
+        $.preproc_if_block,     // nested
+        $.preproc_directive,    // other #lines
+        $.statement             // normal code
+      )),
+      // Optional else branch
+      optional(seq(
+        field('else', $.preproc_else_line),
+        repeat(choice(
+          $.preproc_if_block,
+          $.preproc_directive,
+          $.statement
+        ))
+      )),
+      field('endif', $.preproc_endif_line)
+    ),
+
+    // #if <condition> - condition is parsed as a separate rule
+    preproc_if_line: $ => seq(
+      alias(token(prec(1, seq('#', /[ \t]*/, 'if', /[ \t]+/))), '#if'),
+      field('condition', $.preproc_condition)
+    ),
+
+    // #else
+    preproc_else_line: _ => alias(token(prec(1, seq('#', /[ \t]*/, 'else', /[^\n]*/))), '#else'),
+
+    // #endif
+    preproc_endif_line: _ => alias(token(prec(1, seq('#', /[ \t]*/, 'endif', /[^\n]*/))), '#endif'),
+
+    // Minimal condition language:
+    // IDENT or IDENT '(' commaSep(IDENT) ')' or '!' cond or cond '&&' cond or cond '||' cond or '(' cond ')'
+    preproc_condition: $ => $.preproc_disjunction,
+
+    preproc_disjunction: $ => prec.left(seq(
+      $.preproc_conjunction,
+      repeat(seq('||', $.preproc_conjunction))
+    )),
+
+    preproc_conjunction: $ => prec.left(seq(
+      $.preproc_negation,
+      repeat(seq('&&', $.preproc_negation))
+    )),
+
+    preproc_negation: $ => choice(
+      prec(2, seq('!', $.preproc_negation)),
+      $.preproc_primary
+    ),
+
+    preproc_primary: $ => choice(
+      // Prefer call when an identifier is immediately followed by '('
+      prec(1, seq(
+        field('callee', $.identifier),
+        token.immediate('('),
+        commaSep($.identifier),
+        ')'
+      )),
+      $.identifier,
+      seq('(', $.preproc_condition, ')')
+    ),
+
+    // Fallback for any other directive lines (e.g. #define, #include, #ifdef, etc.)
     preproc_directive: _ => token(seq('#', /[^\n]*/)),
 
     // Single token for angle-bracket system-style import path
@@ -402,3 +470,4 @@ function commaSep (rule) {
 function commaSep1(rule) {
   return seq(rule, repeat(seq(',', rule)));
 }
+
