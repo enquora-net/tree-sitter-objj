@@ -63,6 +63,19 @@ const reserved_words = {
 module.exports = grammar(JAVASCRIPT, {
   name: "objj",
 
+  externals: $ => [
+    $._automatic_semicolon,
+    $._template_chars,
+    $._ternary_qmark,
+    $.html_comment,
+    '||',
+    // We use escape sequence and regex pattern to tell the scanner if we're currently inside a string or template string, in which case
+    // it should NOT parse html comments.
+    $.escape_sequence,
+    $.regex_pattern,
+    $.jsx_text,
+  ],
+
   extras: $ => [
     // Whitespace and line endings
     /\u00A0|\s|\\\r?\n/,
@@ -313,6 +326,31 @@ module.exports = grammar(JAVASCRIPT, {
       '<',
       /[A-Za-z0-9_\/.\-]+/,
       '>'
+    )),
+
+    // Fix Javascript parent grammar
+    template_string: $ => seq(
+      '`',
+      repeat(choice(
+        alias($._template_chars, $.string_fragment),
+        $.escape_sequence,
+        $.template_substitution,
+      )),
+      '`',
+    ),
+
+    template_substitution: $ => seq(
+      '${',
+      $._expressions,
+      '}',
+    ),
+
+    ternary_expression: $ => prec.right('ternary', seq(
+      field('condition', $.expression),
+      alias($._ternary_qmark, '?'),
+      field('consequence', $.expression),
+      ':',
+      field('alternative', $.expression),
     )),
 
     // Suppress decorators to avoid conflicts with @-prefixed constructs
