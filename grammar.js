@@ -86,6 +86,8 @@ module.exports = grammar(JAVASCRIPT, {
   conflicts: ($, original) => original.concat([
     [$.objj_message_expression, $.array],
     [$.statement, $.preproc_if_block],
+    [$.binary_expression, $.objj_message_keyword_argument],
+    [$.primary_expression, $.function_expression, $.generator_function],
   ]),
 
   rules: {
@@ -262,7 +264,45 @@ module.exports = grammar(JAVASCRIPT, {
     // Accept reserved words like `null` as selector identifiers in ObjJ
     objj_selector_identifier: $ => choice(
       $.identifier,
-      alias($.null, $.identifier)
+      alias($.null, $.identifier),
+      alias('class', $.identifier),
+      alias('return', $.identifier),
+      alias('void', $.identifier),
+      alias('if', $.identifier),
+      alias('else', $.identifier),
+      alias('switch', $.identifier),
+      alias('case', $.identifier),
+      alias('default', $.identifier),
+      alias('break', $.identifier),
+      alias('continue', $.identifier),
+      alias('while', $.identifier),
+      alias('do', $.identifier),
+      alias('for', $.identifier),
+      alias('new', $.identifier),
+      alias('delete', $.identifier),
+      alias('try', $.identifier),
+      alias('catch', $.identifier),
+      alias('finally', $.identifier),
+      alias('throw', $.identifier),
+      alias('typeof', $.identifier),
+      alias('instanceof', $.identifier),
+      alias('in', $.identifier),
+      alias('this', $.identifier),
+      alias('super', $.identifier),
+      alias('static', $.identifier),
+      alias('export', $.identifier),
+      alias('import', $.identifier),
+      alias('from', $.identifier),
+      alias('as', $.identifier),
+      alias('var', $.identifier),
+      alias('let', $.identifier),
+      alias('const', $.identifier),
+      alias('function', $.identifier),
+      alias('async', $.identifier),
+      alias('await', $.identifier),
+      alias('yield', $.identifier),
+      alias('debugger', $.identifier),
+      alias('with', $.identifier)
     ),
 
     objj_method_selector: $ => choice(
@@ -323,7 +363,7 @@ module.exports = grammar(JAVASCRIPT, {
     // -------------------------------------------------------------------------
     // Preprocessor: minimal structured #if ... #else ... #endif with parsed condition
     // -------------------------------------------------------------------------
-preproc_if_block: $ => seq(
+    preproc_if_block: $ => seq(
       field('if', $.preproc_if_line),
       // Body of the 'if' branch
       repeat(choice(
@@ -345,16 +385,15 @@ preproc_if_block: $ => seq(
 
     // #if <condition> - condition is parsed as a separate rule
     preproc_if_line: $ => seq(
-      alias(token(prec(1, seq('#', /[ \t]*/, 'if', /[ \t]+/))), '#if'),
+      token(prec(1, seq('#', /[ \t]*/, 'if', /[ \t]+/))),
       field('condition', $.preproc_condition)
     ),
 
     // #else
-    preproc_else_line: _ => alias(token(prec(1, seq('#', /[ \t]*/, 'else', /[^\n]*/))), '#else'),
+    preproc_else_line: _ => token(prec(1, seq('#', /[ \t]*/, 'else', /[^\n]*/))),
 
     // #endif
-    preproc_endif_line: _ => alias(token(prec(1, seq('#', /[ \t]*/, 'endif', /[^\n]*/))), '#endif'),
-
+    preproc_endif_line: _ => token(prec(1, seq('#', /[ \t]*/, 'endif', /[^\n]*/))),
     // Minimal condition language:
     // IDENT or IDENT '(' commaSep(IDENT) ')' or '!' cond or cond '&&' cond or cond '||' cond or '(' cond ')'
     preproc_condition: $ => $.preproc_disjunction,
