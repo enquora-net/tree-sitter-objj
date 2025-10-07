@@ -106,6 +106,8 @@ module.exports = grammar(JAVASCRIPT, {
     primary_expression: ($, original) => choice(
       original,
       $.objj_string_literal,
+      $.objj_dictionary_literal,
+      $.objj_array_literal,
       $.objj_message_expression,
       $.objj_selector_expression
     ),
@@ -243,6 +245,18 @@ module.exports = grammar(JAVASCRIPT, {
     objj_string_literal: $ => seq(
       '@',
       $.string
+    ),
+
+    // Objective-J boxed dictionary literal: @{ key: value, ... }
+    objj_dictionary_literal: $ => seq(
+      '@',
+      $.object
+    ),
+
+    // Objective-J boxed array literal: @[ item1, item2, ... ]
+    objj_array_literal: $ => seq(
+      '@',
+      $.array
     ),
 
     // Objective-J method declaration (interface/protocol form)
