@@ -199,9 +199,20 @@ module.exports = grammar(JAVASCRIPT, {
     ),
 
     // Liberal type rule: simple identifier or protocol-qualified type
+    // Liberal type rule: simple identifier, protocol-qualified type, or multi-word C types
     objj_type: $ => choice(
-      $.identifier,
-      $.objj_protocol_type
+      $.objj_protocol_type,
+      $.objj_multi_word_type,
+      $.identifier
+    ),
+
+    // Support for multi-word C types like "unsigned int", "long long", etc.
+    objj_multi_word_type: $ => choice(
+      seq('unsigned', choice('char', 'short', 'int', 'long')),
+      seq('signed', choice('char', 'short', 'int', 'long')),
+      seq('long', 'long'),
+      seq('long', 'double'),
+      seq('unsigned', 'long', 'long')
     ),
 
     objj_protocol_type: $ => seq(
