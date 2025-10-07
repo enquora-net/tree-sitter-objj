@@ -166,14 +166,18 @@ module.exports = grammar(JAVASCRIPT, {
     //   { ... ivars ... }
     //   ... methods ...
     //   @end
-    objj_class_implementation: $ => seq(
+    objj_class_implementation: $ => prec.right(1, seq(
       '@implementation',
       field('name', $.identifier),
-      optional(seq(':', field('superclass', $.identifier))),
+      // Accept either a superclass or a category/extension in parentheses
+      optional(choice(
+        seq(':', field('superclass', $.identifier)),
+        seq('(', optional($.identifier), ')')
+      )),
       optional($.objj_instance_variables),
       repeat($.objj_implementation_member),
       '@end'
-    ),
+    )),
 
     objj_instance_variables: $ => seq(
       '{',
@@ -214,7 +218,11 @@ module.exports = grammar(JAVASCRIPT, {
       seq('signed', choice('char', 'short', 'int', 'long')),
       seq('long', 'long'),
       seq('long', 'double'),
-      seq('unsigned', 'long', 'long')
+      seq('unsigned', 'long', 'long'),
+
+      // new single-word forms
+      'unsigned',
+      'signed',
     ),
 
     objj_protocol_type: $ => seq(
