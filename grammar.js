@@ -253,11 +253,21 @@ module.exports = grammar(JAVASCRIPT, {
       ')'
     ),
 
+    // Allow accessor attribute names like getter=isMultiple and setter=setMultiple:
+    // The right-hand side can be a plain identifier or a selector-like name with colons.
     objj_accessor_attribute: $ => choice(
-      // property=themeBlend, getter=name, setter=name
-      seq($.identifier, '=', $.identifier),
+      seq($.identifier, '=', $.objj_accessor_name),
       // standalone attributes if needed
       $.identifier
+    ),
+
+    // Accept:
+    // - identifier
+    // - identifier ':' (e.g., setMultiple:)
+    // - identifier ':' identifier ':' ... (e.g., setValue:forKey:)
+    objj_accessor_name: $ => choice(
+      $.identifier,
+      seq($.identifier, repeat1(seq(':', $.identifier)), ':'),
     ),
 
     // Implementation members: for now, support method definitions.
@@ -357,7 +367,7 @@ module.exports = grammar(JAVASCRIPT, {
     objj_method_selector: $ => choice(
       // Unary selector: - (ReturnType)name;
       $.objj_selector_identifier,
-      // Keyword selector: one or more keyword parts
+      // Keyword selector: one or more parts
       repeat1($.objj_keyword_declarator)
     ),
 
