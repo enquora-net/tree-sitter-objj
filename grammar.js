@@ -95,6 +95,8 @@ module.exports = grammar(JAVASCRIPT, {
     statement: ($, original) => choice(
       original,
       $.objj_import,
+      $.objj_global_declaration,
+      $.objj_class_forward_declaration,
       $.objj_typedef,
       $.objj_protocol_declaration,
       $.objj_class_implementation,
@@ -125,6 +127,20 @@ module.exports = grammar(JAVASCRIPT, {
         $.string             // "..." or '...'
       ))
     )),
+
+    // Objective-J global declaration:
+    //   @global document
+    objj_global_declaration: $ => seq(
+      '@global',
+      field('name', $.identifier)
+    ),
+
+    // Objective-J @class forward declaration:
+    //   @class CPFontPanel
+    objj_class_forward_declaration: $ => seq(
+      '@class',
+      field('name', $.identifier)
+    ),
 
     // Objective-J typedef:
     //   @typedef CPModalSession
