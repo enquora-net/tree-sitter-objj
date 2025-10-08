@@ -1,97 +1,75 @@
-ifeq ($(OS),Windows_NT)
-$(error Windows is not supported)
+# ----------------------------
+# Objective-J Tree-sitter grammar Makefile
+# ----------------------------
+
+NAME = tree-sitter-objj
+BUILD_DIR = build
+RELEASE_DIR = build
+TARGET = $(BUILD_DIR)/$(NAME).dylib
+
+# macOS universal build
+ARCHS = arm64 x86_64
+CFLAGS = -std=c99 -fPIC -O3 -Wall -Wextra
+LDFLAGS = -dynamiclib -Wl,-install_name,@rpath/$(NAME).dylib
+
+SRC = src/parser.c
+# Include scanner if present
+ifeq ($(wildcard src/scanner.c), src/scanner.c)
+    SRC += src/scanner.c
 endif
 
-LANGUAGE_NAME := tree-sitter-objj
-HOMEPAGE_URL := https://github.com/tree-sitter/tree-sitter-objj
-VERSION := 0.1.0
+# Default install prefix (system-wide)
+PREFIX ?= /opt/local
+LIBDIR = $(PREFIX)/lib/tree-sitter
 
-# repository
-SRC_DIR := src
+# ----------------------------
+# Targets
+# ----------------------------
 
-TS ?= tree-sitter
+# Default target: build the release dylib
+all: release
 
-# install directory layout
-PREFIX ?= /usr/local
-DATADIR ?= $(PREFIX)/share
-INCLUDEDIR ?= $(PREFIX)/include
-LIBDIR ?= $(PREFIX)/lib
-PCLIBDIR ?= $(LIBDIR)/pkgconfig
+# Build object files and universal fat dylib
+build: $(TARGET)
 
-# source/object files
-PARSER := $(SRC_DIR)/parser.c
-EXTRAS := $(filter-out $(PARSER),$(wildcard $(SRC_DIR)/*.c))
-OBJS := $(patsubst %.c,%.o,$(PARSER) $(EXTRAS))
+# Build release version: clean + build
+release: clean $(TARGET)
+	@echo "✅ Release built at $(TARGET)"
 
-# flags
-ARFLAGS ?= rcs
-override CFLAGS += -I$(SRC_DIR) -std=c11 -fPIC
+# Rule to create the universal dylib
+$(TARGET): $(SRC)
+	@mkdir -p $(BUILD_DIR) $(RELEASE_DIR)
+	@echo "Building universal dylib for macOS ($(ARCHS))..."
+	# Compile object files per architecture
+	@for arch in $(ARCHS); do \
+		for srcfile in $(SRC); do \
+			objfile=$(BUILD_DIR)/$$(basename $$srcfile .c)_$$arch.o; \
+			echo "  Compiling $$srcfile for $$arch -> $$objfile"; \
+			clang $(CFLAGS) -arch $$arch -c $$srcfile -o $$objfile; \
+		done; \
+	done
+	# Link universal dylib in a single command
+	@clang -dynamiclib $(foreach arch,$(ARCHS),$(BUILD_DIR)/*_$(arch).o) -o $(TARGET) $(LDFLAGS)
+	@echo "✅ Built universal dylib at $(TARGET)"
 
-# ABI versioning
-SONAME_MAJOR = $(shell sed -n 's/\#define LANGUAGE_VERSION //p' $(PARSER))
-SONAME_MINOR = $(word 1,$(subst ., ,$(VERSION)))
+# Install the release dylib to a stable system path
+install: $(TARGET)
+	@echo "Installing $(NAME) dylib to $(LIBDIR)..."
+	@mkdir -p $(LIBDIR)
+	@cp $(TARGET) $(LIBDIR)/
+	@echo "✅ Installed $(LIBDIR)/$(NAME).dylib"
 
-# OS-specific bits
-ifeq ($(shell uname),Darwin)
-	SOEXT = dylib
-	SOEXTVER_MAJOR = $(SONAME_MAJOR).$(SOEXT)
-	SOEXTVER = $(SONAME_MAJOR).$(SONAME_MINOR).$(SOEXT)
-	LINKSHARED = -dynamiclib -Wl,-install_name,$(LIBDIR)/lib$(LANGUAGE_NAME).$(SOEXTVER),-rpath,@executable_path/../Frameworks
-else
-	SOEXT = so
-	SOEXTVER_MAJOR = $(SOEXT).$(SONAME_MAJOR)
-	SOEXTVER = $(SOEXT).$(SONAME_MAJOR).$(SONAME_MINOR)
-	LINKSHARED = -shared -Wl,-soname,lib$(LANGUAGE_NAME).$(SOEXTVER)
-endif
-ifneq ($(filter $(shell uname),FreeBSD NetBSD DragonFly),)
-	PCLIBDIR := $(PREFIX)/libdata/pkgconfig
-endif
-
-all: lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).pc
-
-lib$(LANGUAGE_NAME).a: $(OBJS)
-	$(AR) $(ARFLAGS) $@ $^
-
-lib$(LANGUAGE_NAME).$(SOEXT): $(OBJS)
-	$(CC) $(LDFLAGS) $(LINKSHARED) $^ $(LDLIBS) -o $@
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-$(LANGUAGE_NAME).pc: bindings/c/$(LANGUAGE_NAME).pc.in
-	sed -e 's|@PROJECT_VERSION@|$(VERSION)|' \
-		-e 's|@CMAKE_INSTALL_LIBDIR@|$(LIBDIR:$(PREFIX)/%=%)|' \
-		-e 's|@CMAKE_INSTALL_INCLUDEDIR@|$(INCLUDEDIR:$(PREFIX)/%=%)|' \
-		-e 's|@PROJECT_DESCRIPTION@|$(DESCRIPTION)|' \
-		-e 's|@PROJECT_HOMEPAGE_URL@|$(HOMEPAGE_URL)|' \
-		-e 's|@CMAKE_INSTALL_PREFIX@|$(PREFIX)|' $< > $@
-
-$(PARSER): $(SRC_DIR)/grammar.json
-	$(TS) generate $^
-
-install: all
-	install -d '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/objj '$(DESTDIR)$(INCLUDEDIR)'/tree_sitter '$(DESTDIR)$(PCLIBDIR)' '$(DESTDIR)$(LIBDIR)'
-	install -m644 bindings/c/tree_sitter/$(LANGUAGE_NAME).h '$(DESTDIR)$(INCLUDEDIR)'/tree_sitter/$(LANGUAGE_NAME).h
-	install -m644 $(LANGUAGE_NAME).pc '$(DESTDIR)$(PCLIBDIR)'/$(LANGUAGE_NAME).pc
-	install -m644 lib$(LANGUAGE_NAME).a '$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).a
-	install -m755 lib$(LANGUAGE_NAME).$(SOEXT) '$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXTVER)
-	ln -sf lib$(LANGUAGE_NAME).$(SOEXTVER) '$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXTVER_MAJOR)
-	ln -sf lib$(LANGUAGE_NAME).$(SOEXTVER_MAJOR) '$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXT)
-	install -m644 queries/*.scm '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/objj
-
-uninstall:
-	$(RM) '$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).a \
-		'$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXTVER) \
-		'$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXTVER_MAJOR) \
-		'$(DESTDIR)$(LIBDIR)'/lib$(LANGUAGE_NAME).$(SOEXT) \
-		'$(DESTDIR)$(INCLUDEDIR)'/tree_sitter/$(LANGUAGE_NAME).h \
-		'$(DESTDIR)$(PCLIBDIR)'/$(LANGUAGE_NAME).pc
-	$(RM) -r '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/objj
-
+# Remove build and release artifacts
 clean:
-	$(RM) $(OBJS) $(LANGUAGE_NAME).pc lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT)
+	@echo "Cleaning build and release directories..."
+	@rm -rf $(BUILD_DIR) $(RELEASE_DIR)
 
-test:
-	$(TS) test
+# Remove installed dylib
+uninstall:
+	@echo "Removing installed $(NAME) dylib from $(LIBDIR)..."
+	@rm -f $(LIBDIR)/$(NAME).dylib
 
-.PHONY: all install uninstall clean test
+# ----------------------------
+# Phony targets
+# ----------------------------
+.PHONY: all build release install clean uninstall
