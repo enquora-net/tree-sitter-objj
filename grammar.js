@@ -248,9 +248,11 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_accessors_directive: $ => seq(
       '@accessors',
-      '(',
-      commaSep1($.objj_accessor_attribute),
-      ')'
+      optional(seq(
+        '(',
+          commaSep1($.objj_accessor_attribute),
+        ')'
+      ))
     ),
 
     // Allow accessor attribute names like getter=isMultiple and setter=setMultiple:
