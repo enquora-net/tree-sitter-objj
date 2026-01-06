@@ -197,8 +197,29 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_instance_variables: $ => seq(
       '{',
-      repeat($.objj_instance_variable),
+      repeat(choice(
+        $.objj_instance_variable,
+        $.preproc_ivar_if_block
+      )),
       '}'
+    ),
+
+    preproc_ivar_if_block: $ => seq(
+      field('if', $.preproc_if_line),
+      repeat(choice(
+        $.objj_instance_variable,
+        $.preproc_ivar_if_block,
+        $.preproc_directive
+      )),
+      optional(seq(
+        field('else', $.preproc_else_line),
+        repeat(choice(
+          $.objj_instance_variable,
+          $.preproc_ivar_if_block,
+          $.preproc_directive
+        ))
+      )),
+      field('endif', $.preproc_endif_line)
     ),
 
     objj_instance_variable: $ => choice(
