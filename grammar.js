@@ -273,7 +273,8 @@ module.exports = grammar(JAVASCRIPT, {
 
     // Implementation members: for now, support method definitions.
     objj_implementation_member: $ => choice(
-      $.objj_method_definition
+      $.objj_method_definition,
+      $.preproc_directive
     ),
 
     // Objective-J boxed string literal: @"..."
