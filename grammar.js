@@ -334,8 +334,12 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_method_type: $ => seq(
       '(',
-      // Allow ObjJ types here, including protocol-qualified ones, or 'void'
-      field('type', choice($.objj_type, 'void')),
+        // Allow ObjJ types here, including protocol-qualified ones, or 'void'
+        field('type', choice(
+          '@action',
+          $.objj_type,
+          'void'
+        )),
       ')'
     ),
 
