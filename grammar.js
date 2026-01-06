@@ -285,8 +285,25 @@ module.exports = grammar(JAVASCRIPT, {
     // Objective-J boxed dictionary literal: @{ key: value, ... }
     objj_dictionary_literal: $ => seq(
       '@',
-      $.object
+      '{',
+      optional(seq(
+        commaSep1($.objj_dictionary_pair),
+        optional(',')
+      )),
+      '}'
     ),
+
+    objj_dictionary_pair: $ => seq(
+      field('key', alias(
+        choice($.identifier, $.objj_string_literal),
+        $.objj_dictionary_key
+      )),
+      ':',
+      field('value', alias($.expression, $.objj_dictionary_value))
+    ),
+
+    objj_dictionary_key: $ => choice($.identifier, $.objj_string_literal),
+    objj_dictionary_value: $ => $.expression,
 
     // Objective-J boxed array literal: @[ item1, item2, ... ]
     objj_array_literal: $ => seq(
