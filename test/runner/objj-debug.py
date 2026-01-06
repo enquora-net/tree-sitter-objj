@@ -188,6 +188,22 @@ class ParseTreeDebugger:
             start = node.start_point
             print(f"{indent}↓ {node.type} at {start[0] + 1}:{start[1] + 1}")
 
+    def print_error_summary(self, error_node, parent_chain):
+        print(f"\n{'═' * 70}")
+        print("ERROR SUMMARY")
+        print(f"{'═' * 70}")
+        print(f"Type: {error_node.type}")
+        start_row = error_node.start_point[0] + 1
+        start_col = error_node.start_point[1] + 1
+        end_row = error_node.end_point[0] + 1
+        end_col = error_node.end_point[1] + 1
+        if start_row == end_row:
+            print(f"Position: line {start_row}, cols {start_col}-{end_col}")
+        else:
+            print(f"Position: line {start_row}, col {start_col} to line {end_row}, col {end_col}")
+        print(f"Text: {error_node.text}")
+        print(f"Parent chain length: {len(parent_chain)}")
+
     def debug_file(self, file_path: Path):
         """
         Debug a single file, showing full CST if errors found.
@@ -213,7 +229,9 @@ class ParseTreeDebugger:
             error_result = self.find_first_error(tree.root_node)
 
             if error_result:
-                error_node, _ = error_result
+                error_node, parent_chain = error_result
+
+                print("\nDEBUG: Found error node. Opening file in Xcode and printing CST...")
 
                 open_file_with_default_app(file_path, error_node.start_point.row)
 
@@ -230,6 +248,9 @@ class ParseTreeDebugger:
                 print("FULL CONCRETE SYNTAX TREE")
                 print("─" * 70)
                 print(self.format_node(tree.root_node, show_text=False))
+
+                # Repeat concise error summary at the end for convenience
+                self.print_error_summary(error_node, parent_chain)
 
                 return False
 
@@ -255,11 +276,13 @@ def open_file_with_default_app(filepath, line_number):
     filepath = Path(filepath).expanduser().resolve()
 
     try:
+        # Xcode expects 1-based line numbers; clamp to minimum of 1
+        one_based_line = max(1, int(line_number) + 1)
         subprocess.run(
-            ["xed", "--line", str(line_number), str(filepath)],
+            ["xed", "--line", str(one_based_line), str(filepath)],
             check=True
         )
-        print(f"Opened {filepath} at line {line_number}")
+        print(f"Opened {filepath} at line {one_based_line}")
 
     except FileNotFoundError:
         print("Error: 'xed' not found. Is Xcode installed and on your PATH?")
@@ -365,3 +388,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
