@@ -267,6 +267,7 @@ module.exports = grammar(JAVASCRIPT, {
     // - identifier ':' identifier ':' ... (e.g., setValue:forKey:)
     objj_accessor_name: $ => choice(
       $.identifier,
+      seq($.identifier, ':'),
       seq($.identifier, repeat1(seq(':', $.identifier)), ':'),
     ),
 
