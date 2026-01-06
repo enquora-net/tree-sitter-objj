@@ -9,8 +9,8 @@ TARGET = $(BUILD_DIR)/$(NAME).dylib
 
 # macOS universal build
 ARCHS = arm64 x86_64
-CFLAGS = -std=c99 -fPIC -O3 -Wall -Wextra
-LDFLAGS = -dynamiclib -Wl,-install_name,@rpath/$(NAME).dylib
+CFLAGS = -std=c99 -fPIC -O3 -Wall -Wextra -Wno-typedef-redefinition -Wno-unused-parameter
+LDFLAGS = -Wl,-install_name,@rpath/$(NAME).dylib
 
 SRC = src/parser.c
 # Include scanner if present
@@ -19,7 +19,7 @@ ifeq ($(wildcard src/scanner.c), src/scanner.c)
 endif
 
 # Default install prefix (system-wide)
-PREFIX ?= /opt/local
+PREFIX ?= /usr/local
 LIBDIR = $(PREFIX)/lib/tree-sitter
 
 # ----------------------------
@@ -49,7 +49,7 @@ $(TARGET): $(SRC)
 		done; \
 	done
 	# Link universal dylib in a single command
-	@clang -dynamiclib $(foreach arch,$(ARCHS),$(BUILD_DIR)/*_$(arch).o) -o $(TARGET) $(LDFLAGS)
+	@clang -dynamiclib $(BUILD_DIR)/*.o -o $(TARGET) $(LDFLAGS)
 	@echo "✅ Built universal dylib at $(TARGET)"
 
 # Install the release dylib to a stable system path
