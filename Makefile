@@ -13,6 +13,7 @@ CFLAGS = -std=c99 -fPIC -O3 -Wall -Wextra -Wno-typedef-redefinition -Wno-unused-
 LDFLAGS = -Wl,-install_name,@rpath/$(NAME).dylib
 
 SRC = src/parser.c
+# Generated parser source files: parser.c, scanner.c if applicable
 # Include scanner if present
 ifeq ($(wildcard src/scanner.c), src/scanner.c)
     SRC += src/scanner.c
@@ -26,18 +27,11 @@ LIBDIR = $(PREFIX)/lib/tree-sitter
 # Targets
 # ----------------------------
 
-# Default target: build the release dylib
-all: release
-
-# Build object files and universal fat dylib
-build: $(TARGET)
-
-# Build release version: clean + build
-release: clean $(TARGET)
-	@echo "✅ Release built at $(TARGET)"
-
-# Rule to create the universal dylib
-$(TARGET): $(SRC)
+# Build: generate parser sources and build universal dylib
+build:
+	@echo "Generating parser sources with tree-sitter..."
+	@tree-sitter generate
+	@echo "✅ Generated parser sources"
 	@mkdir -p $(BUILD_DIR) $(RELEASE_DIR)
 	@echo "Building universal dylib for macOS ($(ARCHS))..."
 	# Compile object files per architecture
@@ -52,24 +46,20 @@ $(TARGET): $(SRC)
 	@clang -dynamiclib $(BUILD_DIR)/*.o -o $(TARGET) $(LDFLAGS)
 	@echo "✅ Built universal dylib at $(TARGET)"
 
-# Install the release dylib to a stable system path
-install: $(TARGET)
+# Install the dylib to a stable system path
+install: build
 	@echo "Installing $(NAME) dylib to $(LIBDIR)..."
 	@mkdir -p $(LIBDIR)
 	@cp $(TARGET) $(LIBDIR)/
 	@echo "✅ Installed $(LIBDIR)/$(NAME).dylib"
 
-# Remove build and release artifacts
+# Remove build artifacts
 clean:
-	@echo "Cleaning build and release directories..."
-	@rm -rf $(BUILD_DIR) $(RELEASE_DIR)
-
-# Remove installed dylib
-uninstall:
-	@echo "Removing installed $(NAME) dylib from $(LIBDIR)..."
-	@rm -f $(LIBDIR)/$(NAME).dylib
+	@echo "Cleaning build directory..."
+	@rm -rf $(BUILD_DIR)
 
 # ----------------------------
 # Phony targets
 # ----------------------------
-.PHONY: all build release install clean uninstall
+.PHONY: build install clean
+
