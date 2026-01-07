@@ -111,7 +111,8 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_dictionary_literal,
       $.objj_array_literal,
       $.objj_selector_expression,
-      $._bracket_expression
+      $._bracket_expression,
+      $.objj_deref_expression,
     ),
 
     _bracket_expression: $ => choice(
@@ -131,6 +132,22 @@ module.exports = grammar(JAVASCRIPT, {
             )
           )
         )
+    ),
+
+    objj_deref_expression: $ => seq(
+      token('@deref'),
+      '(',
+      field('argument', $.expression),
+      ')'
+    ),
+
+    assignment_expression: ($, original) => choice(
+      original,
+      prec.right('assign', seq(
+        field('left', $.objj_deref_expression),
+        '=',
+        field('right', $.expression),
+      ))
     ),
 
     // Objective-J imports:
