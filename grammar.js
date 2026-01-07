@@ -359,7 +359,12 @@ module.exports = grammar(JAVASCRIPT, {
 
     // One part of a method signature: nameFragment:(Type)paramName
     objj_method_parameter_part: $ => seq(
-                                         field('name_part', $.identifier),
+                                         field('name_part', choice(
+                                                                   $.identifier,
+                                                                   alias('with', $.identifier),  // Reserved word but valid as method name part
+                                                                   alias('for', $.identifier),
+                                                                   // Add others as discovered
+                                                                   )),
                                          ':',
                                          field('parameter_type', $.objj_method_type),
                                          field('parameter_name', $.identifier)
