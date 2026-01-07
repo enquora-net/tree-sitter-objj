@@ -112,6 +112,7 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_array_literal,
       $.objj_selector_expression,
       $._bracket_expression,
+      $.objj_ref_expression,
       $.objj_deref_expression,
     ),
 
@@ -132,6 +133,13 @@ module.exports = grammar(JAVASCRIPT, {
             )
           )
         )
+    ),
+
+    objj_ref_expression: $ => seq(
+      token('@ref'),
+      '(',
+        field('argument', $.expression),
+      ')'
     ),
 
     objj_deref_expression: $ => seq(
