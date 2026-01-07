@@ -110,8 +110,27 @@ module.exports = grammar(JAVASCRIPT, {
       $.objj_string_literal,
       $.objj_dictionary_literal,
       $.objj_array_literal,
+      $.objj_selector_expression,
+      $._bracket_expression
+    ),
+
+    _bracket_expression: $ => choice(
       $.objj_message_expression,
-      $.objj_selector_expression
+      prec(-1, $.array)
+    ),
+
+    array: $ => seq(
+      '[',
+      choice(
+        ']',
+        seq(
+          choice($.expression, $.spread_element),
+            choice(
+              token.immediate(']'),
+              seq(token.immediate(','), commaSep(optional(choice($.expression, $.spread_element))), ']')
+            )
+          )
+        )
     ),
 
     // Objective-J imports:
@@ -447,7 +466,7 @@ module.exports = grammar(JAVASCRIPT, {
     objj_message_keyword_argument: $ => seq(
       field('keyword', $.objj_selector_identifier),
       ':',
-      field('argument', $.expression)
+      commaSep1($.expression)  // One or more comma-separated expressions
     ),
 
     // Objective-J selector expression: @selector(name) or @selector(name:part:)
