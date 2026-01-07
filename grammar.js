@@ -234,6 +234,7 @@ module.exports = grammar(JAVASCRIPT, {
         seq(':', field('superclass', $.identifier)),
         seq('(', optional($.identifier), ')')
       )),
+      optional(field('protocols', $.objj_protocol_reference_list)),  // Add protocol adoption
       optional($.objj_instance_variables),
       repeat($.objj_implementation_member),
       '@end'
