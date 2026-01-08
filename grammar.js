@@ -369,12 +369,11 @@ module.exports = grammar(JAVASCRIPT, {
     objj_method_parameter_part: $ => seq(
                                          field('name_part', choice(
                                                                    $.identifier,
-                                                                   alias('with', $.identifier),  // Reserved word but valid as method name part
+                                                                   alias('with', $.identifier),
                                                                    alias('for', $.identifier),
-                                                                   // Add others as discovered
                                                                    )),
                                          ':',
-                                         field('parameter_type', $.objj_method_type),
+                                         optional(field('parameter_type', $.objj_method_type)),  // Make optional
                                          field('parameter_name', $.identifier)
                                          ),
 
