@@ -84,6 +84,7 @@ module.exports = grammar(JAVASCRIPT, {
     [$.statement, $.preproc_if_block],
     [$.binary_expression, $.objj_message_keyword_argument],
     [$.primary_expression, $.function_expression, $.generator_function],
+    [$.array_pattern, $.native_array],
   ]),
 
   rules: {
@@ -109,25 +110,28 @@ module.exports = grammar(JAVASCRIPT, {
                                                 $.objj_ref_expression,
                                                 $.objj_deref_expression,
                                                 ),
-
+    // All bracket constructs routed here - message expressions take precedence over arrays
     _bracket_expression: $ => choice(
-                                     $.objj_message_expression,
-                                     prec(-1, $.array)
+                                     prec.dynamic(10, $.objj_message_expression),
+                                     prec.dynamic(0, $.native_array)
                                      ),
+    // Disable inherited JavaScript array rule - all bracket constructs must go through _bracket_expression
+    array: $ => choice(),
 
-    array: $ => seq(
-                    '[',
-                    choice(
-                           ']',
-                           seq(
-                               choice($.expression, $.spread_element),
-                               choice(
-                                      token.immediate(']'),
-                                      seq(token.immediate(','), commaSep(optional(choice($.expression, $.spread_element))), ']')
+    // Native array implementation for use within _bracket_expression only
+    native_array: $ => seq(
+                           '[',
+                           choice(
+                                  ']',
+                                  seq(
+                                      choice($.expression, $.spread_element),
+                                      choice(
+                                             token.immediate(']'),
+                                             seq(token.immediate(','), commaSep(optional(choice($.expression, $.spread_element))), ']')
+                                             )
                                       )
-                               )
-                           )
-                    ),
+                                  )
+                           ),
 
     objj_ref_expression: $ => seq(
                                   token('@ref'),
