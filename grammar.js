@@ -248,7 +248,18 @@ module.exports = grammar(JAVASCRIPT, {
                                            '@public'
                                            ),
 
+    // Allow storage/interface modifiers like @outlet before ivar type
+    objj_ivar_modifiers: $ => repeat1($.objj_ivar_modifier),
+
+    objj_ivar_modifier: _ => choice(
+                                   '@outlet',
+                                   '@IBOutlet',
+                                   '@weak',
+                                   '@strong'
+                                   ),
+
     objj_field_definition: $ => seq(
+                                    optional($.objj_ivar_modifiers),
                                     field('type', $.objj_type),
                                     field('name', $.identifier),
                                     optional(field('accessors', $.objj_accessors_directive)),
@@ -256,9 +267,10 @@ module.exports = grammar(JAVASCRIPT, {
                                     ),
 
     objj_type: $ => choice(
-                           $.objj_protocol_type,
+                           $.objj_protocol_type, // identifier + protocol list
                            $.objj_multi_word_type,
-                           $.identifier
+                           seq('id', optional($.objj_protocol_reference_list)), // id and id<Protocol>
+                           $.identifier // plain identifier without protocol list
                            ),
 
     objj_multi_word_type: $ => choice(
@@ -606,3 +618,4 @@ function commaSep (rule) {
 function commaSep1(rule) {
   return seq(rule, repeat(seq(',', rule)));
 }
+
