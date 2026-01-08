@@ -539,7 +539,14 @@ module.exports = grammar(JAVASCRIPT, {
                                  seq('(', $.preproc_condition, ')')
                                  ),
 
-    preproc_directive: _ => token(seq('#', /[^\n]*/)),
+    preproc_directive: _ => token(seq(
+                                      '#',
+                                      repeat(seq(
+                                                 /[^\n\\]*/,
+                                                 optional(seq('\\', '\n'))
+                                                 )),
+                                      /[^\n]*/
+                                      )),
 
     system_lib_string: $ => token(seq(
                                       '<',
