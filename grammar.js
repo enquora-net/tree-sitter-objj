@@ -312,7 +312,8 @@ module.exports = grammar(JAVASCRIPT, {
                                             $.objj_method_definition,
                                             $.preproc_directive,
                                             $.objj_global_declaration,
-                                            $.variable_declaration
+                                            $.variable_declaration,
+                                            $.empty_statement
                                             ),
 
     _objj_literal: $ => choice(
@@ -414,7 +415,7 @@ module.exports = grammar(JAVASCRIPT, {
                                        ),
 
     objj_message_keyword_argument: $ => seq(
-                                            field('keyword', $.objj_selector_identifier),
+                                            field('keyword', optional($.objj_selector_identifier)),
                                             ':',
                                             commaSep1($.expression)
                                             ),
