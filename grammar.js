@@ -102,9 +102,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     primary_expression: ($, original) => choice(
                                                 original,
-                                                $.objj_string_literal,
-                                                $.objj_dictionary_literal,
-                                                $.objj_array_literal,
+                                                $._objj_literal,
                                                 $.objj_selector_expression,
                                                 $._bracket_expression,
                                                 $.objj_ref_expression,
@@ -303,6 +301,12 @@ module.exports = grammar(JAVASCRIPT, {
                                             $.objj_global_declaration
                                             ),
 
+    _objj_literal: $ => choice(
+                               $.objj_dictionary_literal,  // Try { after @ first
+                               $.objj_array_literal,        // Try [ after @ second
+                               $.objj_string_literal,       // Try string after @ last (fallback)
+                               ),
+
     objj_string_literal: $ => seq(
                                   '@',
                                   $.string
@@ -320,7 +324,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_dictionary_pair: $ => seq(
                                    field('key', alias(
-                                                      choice($.identifier, $.objj_string_literal),
+                                                      choice($.identifier, $.objj_string_literal, $.string),
                                                       $.objj_dictionary_key
                                                       )),
                                    ':',
@@ -332,7 +336,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     objj_array_literal: $ => seq(
                                  '@',
-                                 $.array
+                                 $.native_array
                                  ),
 
     // ============================================================================
