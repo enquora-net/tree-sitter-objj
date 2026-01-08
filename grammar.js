@@ -85,6 +85,7 @@ module.exports = grammar(JAVASCRIPT, {
     [$.binary_expression, $.objj_message_keyword_argument],
     [$.primary_expression, $.function_expression, $.generator_function],
     [$.array_pattern, $.native_array],
+    [$._property_name, $._objj_literal],
   ]),
 
   rules: {
@@ -538,6 +539,11 @@ module.exports = grammar(JAVASCRIPT, {
     // ============================================================================
     // JAVASCRIPT GRAMMAR FIXES
     // ============================================================================
+
+    _property_name: ($, original) => choice(
+                                            original,
+                                            $.objj_string_literal
+                                            ),
 
     template_string: $ => seq(
                               '`',
