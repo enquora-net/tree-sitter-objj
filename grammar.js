@@ -126,7 +126,7 @@ module.exports = grammar(JAVASCRIPT, {
                                       choice($.expression, $.spread_element),
                                       choice(
                                              token.immediate(']'),
-                                             seq(token.immediate(','), commaSep(optional(choice($.expression, $.spread_element))), ']')
+                                             seq(',', commaSep(optional(choice($.expression, $.spread_element))), ']')
                                              )
                                       )
                                   )
