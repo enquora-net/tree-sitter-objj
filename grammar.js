@@ -487,7 +487,9 @@ module.exports = grammar(JAVASCRIPT, {
                                repeat(choice(
                                              $.preproc_if_block,
                                              $.preproc_directive,
-                                             $.statement
+                                             $.statement,
+                                             'else',  // Allow bare else keyword
+                                             'else if'  // Possibly this too
                                              )),
                                optional(seq(
                                             field('else', $.preproc_else_line),
