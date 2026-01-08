@@ -361,7 +361,7 @@ module.exports = grammar(JAVASCRIPT, {
                                       field('method_type', choice('+', '-')),
                                       field('return_type', $.objj_method_type),
                                       choice(
-                                             field('method_name', $.identifier),
+                                             field('method_name', $.objj_selector_identifier),
                                              repeat1($.objj_method_parameter_part)
                                              ),
                                       ';'
@@ -372,7 +372,7 @@ module.exports = grammar(JAVASCRIPT, {
                                      field('method_type', choice('+', '-')),
                                      field('return_type', $.objj_method_type),
                                      choice(
-                                            field('method_name', $.identifier),
+                                            field('method_name', $.objj_selector_identifier),
                                             repeat1($.objj_method_parameter_part)
                                             ),
                                      field('body', $.statement_block)
@@ -380,11 +380,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     // One part of a method signature: nameFragment:(Type)paramName
     objj_method_parameter_part: $ => seq(
-                                         field('name_part', choice(
-                                                                   $.identifier,
-                                                                   alias('with', $.identifier),
-                                                                   alias('for', $.identifier),
-                                                                   )),
+                                         field('name_part', $.objj_selector_identifier),
                                          ':',
                                          optional(field('parameter_type', $.objj_method_type)),  // Make optional
                                          field('parameter_name', $.identifier)
