@@ -201,7 +201,7 @@ module.exports = grammar(JAVASCRIPT, {
                                                       field('name', $.identifier),
                                                       optional(choice(
                                                                       seq(':', field('superclass', $.identifier)),
-                                                                      seq('(', optional($.identifier), ')')
+                                                                      seq('(', field('category', $.identifier), ')')
                                                                       )),
                                                       optional(field('protocols', $.objj_protocol_reference_list)),
                                                       optional($.objj_instance_variables),
@@ -311,7 +311,8 @@ module.exports = grammar(JAVASCRIPT, {
     objj_implementation_member: $ => choice(
                                             $.objj_method_definition,
                                             $.preproc_directive,
-                                            $.objj_global_declaration
+                                            $.objj_global_declaration,
+                                            $.variable_declaration
                                             ),
 
     _objj_literal: $ => choice(
