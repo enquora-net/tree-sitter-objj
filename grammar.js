@@ -396,14 +396,12 @@ module.exports = grammar(JAVASCRIPT,
 
         objj_method_type: $ => seq(
           '(',
+          optional('async'),  // Move async out front
           field('type', choice(
             '@action',
             'void',
-            seq(
-              optional('async'),
-              $.objj_type
-            )
-            )),
+            $.objj_type
+          )),
           ')'
         ),
 
