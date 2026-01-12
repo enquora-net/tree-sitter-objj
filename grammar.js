@@ -558,10 +558,14 @@ module.exports = grammar(JAVASCRIPT,
             /[^\n]*/
         )),
 
+        // TODO: Consider whether filesystem paths should be fully parsed vs opaque strings.
+        // Current approach: permissive regex accepting common path characters.
+        // Alternative: parse as opaque content between <>, validate in compiler/tooling.
+        // Decision deferred pending experience with cross-platform usage and tool requirements.
         system_lib_string: $ => token(seq(
-            '<',
-            /[A-Za-z0-9_\/.\-]+/,
-            '>'
+          '<',
+          /[A-Za-z0-9_\/\\\.\-+:]+/,  // Allow: alphanumeric, _, /, \, ., -, +, :
+          '>'
         )),
 
         // ============================================================================
