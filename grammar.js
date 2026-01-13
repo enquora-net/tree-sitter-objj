@@ -109,9 +109,17 @@ module.exports = grammar(JAVASCRIPT,
             original,
             $._objj_literal,
             $.objj_selector_expression,
+            $.objj_protocol_expression,
             $._bracket_expression,
             $.objj_ref_expression,
             $.objj_deref_expression,
+        ),
+
+        objj_protocol_expression: $ => seq(
+          '@protocol',
+          '(',
+          field('protocol', $.identifier),
+          ')'
         ),
 
         // All bracket constructs routed here - message expressions take precedence over arrays
