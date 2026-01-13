@@ -327,6 +327,8 @@ module.exports = grammar(JAVASCRIPT,
             $.preproc_directive,
             $.objj_global_declaration,
             $.variable_declaration,
+            $.function_declaration,
+            $.generator_function_declaration,
             $.empty_statement
         ),
 
