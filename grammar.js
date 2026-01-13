@@ -77,7 +77,8 @@ module.exports = grammar(JAVASCRIPT,
     ],
 
     extras: $ => [
-        /\u00A0|\s|\\\r?\n/,
+        /[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/,
+        /\\\r?\n/,
         $.comment
     ],
 
