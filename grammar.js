@@ -561,8 +561,12 @@ module.exports = grammar(JAVASCRIPT,
         ),
 
         preproc_if_line: $ => seq(
-            token(prec(1, seq('#', /[ \t]*/, 'if', /[ \t]+/))),
-            field('condition', $.preproc_condition)
+          token(prec(1, choice(
+            seq('#', /[ \t]*/, 'if', /[ \t]+/),
+            seq('#', /[ \t]*/, 'ifdef', /[ \t]+/),
+            seq('#', /[ \t]*/, 'ifndef', /[ \t]+/)
+          ))),
+          field('condition', $.preproc_condition)
         ),
 
         preproc_else_line: _ => token(prec(1, seq('#', /[ \t]*/, 'else', /[^\n]*/))),
@@ -587,23 +591,32 @@ module.exports = grammar(JAVASCRIPT,
         ),
 
         preproc_primary: $ => choice(
-            prec(1, seq(
-                field('callee', $.identifier),
-                token.immediate('('),
-                commaSep($.identifier),
-                ')'
-            )),
-            $.identifier,
-            seq('(', $.preproc_condition, ')')
+        // Comparison: xxxx == 3, yyyy > 5
+        prec(3, seq(
+          $.identifier,
+          choice('==', '!=', '<', '>', '<=', '>='),
+          choice($.identifier, $.number)
+        )),
+        // Function call: defined(FOO)
+        prec(1, seq(
+          field('callee', $.identifier),
+          token.immediate('('),
+          commaSep($.identifier),
+          ')'
+        )),
+        // Simple identifier: FOO
+        $.identifier,
+        // Grouped: (condition)
+        seq('(', $.preproc_condition, ')')
         ),
 
         preproc_directive: _ => token(seq(
-            '#',
-            repeat(seq(
-                /[^\n\\]*/,
-                optional(seq('\\', '\n'))
-            )),
-            /[^\n]*/
+          '#',
+          repeat(seq(
+              /[^\n\\]*/,
+              optional(seq('\\', '\n'))
+          )),
+          /[^\n]*/
         )),
 
         // TODO: Consider whether filesystem paths should be fully parsed vs opaque strings.
