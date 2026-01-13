@@ -411,13 +411,20 @@ module.exports = grammar(JAVASCRIPT,
 
         // Implementation method definition: signature + body
         objj_method_definition: $ => seq(
-            field('method_type', choice('+', '-')),
-            field('return_type', $.objj_method_type),
-            choice(
-                field('method_name', $.objj_selector_identifier),
-                repeat1($.objj_method_parameter_part)
+          field('method_type', choice('-', '+')),
+          field('return_type', $.objj_method_type),
+          choice(
+            seq(
+              field('method_name', $.objj_selector_identifier),
+              optional(';'),  // Optional semicolon (valid in Objective-C)
+              field('body', $.statement_block)
             ),
-            field('body', $.statement_block)
+            seq(
+              repeat1($.objj_method_parameter_part),
+              optional(';'),  // Optional semicolon (valid in Objective-C)
+              field('body', $.statement_block)
+            )
+          )
         ),
 
         // One part of a method signature: nameFragment:(Type)paramName
