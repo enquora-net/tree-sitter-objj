@@ -342,17 +342,51 @@ module.exports = grammar(JAVASCRIPT,
             '}'
         ),
 
-        objj_dictionary_pair: $ => seq(
-            field('key', alias(
-                choice($.identifier, $.objj_string_literal, $.string),
-                $.objj_dictionary_key
-            )),
-            ':',
-            field('value', alias($.expression, $.objj_dictionary_value))
+        objj_dictionary_key: $ => choice(
+          $.identifier,                  // foo
+          $.objj_string_literal,         // @"foo"
+          $.string,                      // "foo"
+          $.number,                      // 42, 3.14
+          $.unary_expression,            // -1, !flag, +value
+          $.binary_expression,           // @"val" + 1
+          $.ternary_expression,          // NO ? 0 : 1
+          $.call_expression,             // computeValue()
+          $.member_expression,           // obj.property
+          $.objj_message_expression,     // [CPColor blackColor]
+          $.function_expression,         // Keep for values - functions ARE used here
+          $.arrow_function,              // Keep for values
+          $.parenthesized_expression,    // (complex + expr)
+          $.objj_array_literal,          // @[1, 2, 3]
+          $.objj_dictionary_literal,     // @{nested: dict}
+          $.native_array                 // [1, 2, 3]
         ),
 
-        objj_dictionary_key: $ => choice($.identifier, $.objj_string_literal),
-        objj_dictionary_value: $ => $.expression,
+        objj_dictionary_value: $ => choice(
+          $.identifier,                  // foo
+          $.objj_string_literal,         // @"foo"
+          $.string,                      // "foo"
+          $.number,                      // 42, 3.14
+          $.unary_expression,            // -1, !flag, +value
+          $.binary_expression,           // @"val" + 1
+          $.ternary_expression,          // NO ? 0 : 1
+          $.call_expression,             // computeValue()
+          $.member_expression,           // obj.property
+          $.objj_message_expression,     // [CPColor blackColor]
+          $.function_expression,         // function() { return val; }
+          $.arrow_function,              // () => val
+          $.parenthesized_expression,    // (complex + expr)
+          $.objj_array_literal,          // @[1, 2, 3]
+          $.native_array,                // [1, 2, 3] - ADD THIS
+          $.objj_dictionary_literal      // @{nested: dict}
+        ),
+
+        // This rule has been made explicit,
+        // improving semantic analysis and maintainability
+        objj_dictionary_pair: $ => seq(
+          field('key', $.objj_dictionary_key),
+          ':',
+          field('value', $.objj_dictionary_value)
+        ),
 
         objj_array_literal: $ => seq(
             '@',
