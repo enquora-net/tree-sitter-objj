@@ -153,12 +153,12 @@ module.exports = grammar(JAVASCRIPT,
         ),
 
         assignment_expression: ($, original) => choice(
-            original,
-            prec.right('assign', seq(
-                field('left', $.objj_deref_expression),
-                '=',
-                field('right', $.expression),
-            ))
+          original,
+          prec.right('assign', seq(
+            field('left', $.objj_deref_expression),
+            choice('=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=', '>>>='),
+            field('right', $.expression),
+          ))
         ),
 
         objj_import: $ => prec.dynamic(100, seq(
