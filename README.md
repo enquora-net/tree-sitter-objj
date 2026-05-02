@@ -263,6 +263,14 @@ Tree-sitter syntax highlighting is driven by **highlight queries** — pattern f
 
 Static analysis tools consume the CST to identify patterns that are legal but inadvisable: missing `@end`, unused instance variables, selector mismatches, etc. Linters depend on the tree being accurate even for partially-written code, which requires that error recovery produce plausible partial trees. Tree-sitter's built-in error recovery handles most cases; rules that introduce deeply nested optional structure can degrade recovery quality.
 
+### Refactoring
+
+Automated refactoring has been impractical without a universally accessible
+structural representation of the source. The CST provides that foundation.
+Combined with the Go toolchain, MCP-based assistant integration, a full LSP
+server, or on-device inference, what was once a daunting undertaking is now a
+practical one.
+
 ### Documentation generation (Doxygen)
 
 Doxygen support for Objective-J processes comment blocks attached to method declarations and definitions, class implementations, and instance variables.
