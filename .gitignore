@@ -8,6 +8,7 @@ node_modules/
 
 # Swift artifacts
 .build/
+.swiftpm/
 
 # Go artifacts
 _obj/
@@ -45,3 +46,19 @@ zig-out/
 *.tar.gz
 *.tgz
 *.zip
+
+# Finder/macOS quick-backup copies (e.g. "grammar copy.js", "Makefile copy 2")
+* copy
+* copy [0-9]*
+* copy.[a-z]*
+
+# Local editor configuration (not project artefacts)
+local/
+
+# Development scratch artefacts committed to root by mistake
+/corpus/
+/release/
+/CPApplication.j
+/CPApplication.ast.json
+/CPApplication.cst.json
+/CPApplication.j.cst.txt
