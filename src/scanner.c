@@ -1,7 +1,7 @@
 /**
- * External Scanner for [Grammar Name]
+ * External Scanner for Objective-J
  *
- * This grammar extends [parent grammar] which uses an external scanner to handle
+ * This grammar extends Javascript which uses an external scanner to handle
  * lexical complexities that cannot be expressed purely through grammar rules.
  *
  * SCANNER INHERITANCE LIMITATION:
