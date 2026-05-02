@@ -9,7 +9,7 @@ A [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for
 ## Contents
 
 - [What this repository is](#what-this-repository-is)
-- [Why a grammar exists at all](#why-a-grammar-exists-at-all)
+- [Why tree-sitter rather than a hand-written parser](#why-a-grammar-exists-at-all)
 - [What tree-sitter does — and does not do](#what-tree-sitter-does--and-does-not-do)
 - [How this grammar is structured](#how-this-grammar-is-structured)
 - [The Objective-J language layer](#the-objective-j-language-layer)
