@@ -44,7 +44,9 @@ The grammar is simultaneously the specification, the documentation, and the runn
 
 ## What tree-sitter does — and does not do
 
-Tree-sitter is a **parser generator**. A grammar is written in a JavaScript DSL (`grammar.js`); tree-sitter compiles it to a C parser and a set of binding libraries. The resulting parser accepts source text and produces a **concrete syntax tree (CST)** — a lossless, structured representation of every token in the file, including whitespace and comments where relevant.
+Tree-sitter is a **parser generator** written in C, with a Rust-based CLI toolchain. It has no grammar language of its own; grammars are written using a JavaScript API — a set of combinator functions such as seq(), choice(), repeat(), and field() — in a conventional JavaScript file (grammar.js).
+
+Tree-sitter compiles this to a C parser and a set of binding libraries. Because the runtime is C, the resulting parser can be consumed from any language with a C FFI — Go, Swift, Python, Rust, and others — which is the foundation of its cross-runtime portability. The resulting parser accepts source text and produces a **concrete syntax tree (CST)** — a lossless, structured representation of every token in the file, including whitespace, line breaks and comments where relevant.
 
 Tree-sitter parsers are:
 
