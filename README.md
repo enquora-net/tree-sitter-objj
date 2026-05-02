@@ -26,6 +26,8 @@ A [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for
 
 This repository contains the formal grammar that describes every syntactically valid construct in Objective-J source code. It is the single authoritative source of truth for the shape of the language — used simultaneously by the compiler, editor plugins, linters, and documentation tooling. Every tool that needs to understand Objective-J source reads the same tree, produced from the same grammar, with the same semantics. There is no secondary or informal specification.
 
+Objective-J is a programming language developed for the Cappuccino framework. It is a strict superset of JavaScript, extending it with the fundamental constructs of Objective-C: objects and message passing, expressed through classes, protocols, and a runtime type system. Code written in Objective-J compiles to JavaScript and runs in any standard browser environment. It is syntactically identical to Objective-C with the exception that it provides no direct management of memory, a strict limitation of Javascript itself.
+
 ---
 
 ## Why tree-sitter rather than a hand-written parser
