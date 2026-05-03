@@ -1,6 +1,48 @@
 /**
  * External Scanner for Objective-J
  *
+ * src/scanner.c
+ * tree-sitter-objj
+ *
+ * Created by David Richardson on Wednesday, October 8, 2025.
+ * Copyright (c) 2025 David Richardson.
+ * Source code and compiled binaries are made available under the MIT License.
+ * ============================================================================
+ * MIT License
+ *
+ * Copyright (c) 2025 David Richardson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * ============================================================================
+ *
+ * ====== CRITICAL: DO NOT DELETE. This file is NOT a generated artifact. =====
+ *
+ * Unlike 'parser.c', which is created when running 'tree-sitter generate',
+ * the scanner is a primary source of truth.
+ *
+ * It handles non-regular syntactic constructs that cannot be expressed
+ * within the declarative DSL of grammar.js—specifically regarding
+ * complex Objective-J tokenization and preprocessor state tracking.
+ *
+ * ============================================================================
+ *
  * This grammar extends Javascript which uses an external scanner to handle
  * lexical complexities that cannot be expressed purely through grammar rules.
  *
@@ -23,7 +65,7 @@
  *
  * WORKAROUND:
  *
- * This scanner is copied from [parent grammar]'s scanner with the following
+ * This scanner is copied from Javascript's scanner with the following
  * modifications:
  * 1. Function namespaces changed from tree_sitter_[parent]_* to tree_sitter_[child]_*
  * 2. [Any other modifications specific to your grammar]
@@ -38,8 +80,8 @@
  * re-synchronized if the parent's scanner implementation changes. However, for
  * stable external token semantics, this is typically unnecessary.
  *
- * Source: [parent grammar] scanner.c (version X.Y.Z)
- * Last synchronized: [date]
+ * Source: Javascript scanner.c (version X.Y.Z)
+ * Last synchronized: October 8, 2025
  */
 
 #include "tree_sitter/parser.h"

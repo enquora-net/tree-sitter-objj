@@ -1,7 +1,7 @@
 /**
  * @file A Javascript superset with support for classes and message passing
  * @author David Richardson
- * @license LGPL v2.1
+ * @license MIT, see LICENSE.txt in source code root
  */
 
 /// <reference types="tree-sitter-cli/dsl" />
