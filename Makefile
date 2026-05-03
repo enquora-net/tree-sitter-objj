@@ -1,65 +1,70 @@
-# ----------------------------
-# Objective-J Tree-sitter grammar Makefile
-# ----------------------------
+# ============================================================================
+# tree-sitter-objj Orchestrator
+# ============================================================================
+# Targets: macOS (Native), Linux, Windows (x64 and ARM64)
+# Primary Toolchain: Zig (via 'zig cc' wrapper)
+# ============================================================================
 
-NAME = tree-sitter-objj
-BUILD_DIR = build
-RELEASE_DIR = build
-TARGET = $(BUILD_DIR)/$(NAME).dylib
+ZIG      := zig cc
+TS_CLI   := tree-sitter
+NAME     := tree-sitter-objj
+OUT_DIR  := ./build
 
-# macOS universal build
-ARCHS = arm64 x86_64
-CFLAGS = -std=c99 -fPIC -O3 -Wall -Wextra -Wno-typedef-redefinition -Wno-unused-parameter
-LDFLAGS = -Wl,-install_name,@rpath/$(NAME).dylib
+# Compilation Flags
+# [span_1](start_span)Inherited c99 standard and optimization levels from existing workflow[span_1](end_span)
+CFLAGS   := -std=c99 -O3 -shared -fPIC -Isrc -Wall -Wextra \
+	    -Wno-typedef-redefinition -Wno-unused-parameter
 
-SRC = src/parser.c
-# Generated parser source files: parser.c, scanner.c if applicable
-# Include scanner if present
-ifeq ($(wildcard src/scanner.c), src/scanner.c)
-    SRC += src/scanner.c
-endif
+# Sources
+# [span_2](start_span)parser.c is generated; scanner.c is hand-written logic[span_2](end_span)
+SRCS     := src/parser.c src/scanner.c
 
-# Default install prefix (system-wide)
-PREFIX ?= /usr/local
-LIBDIR = $(PREFIX)/lib/tree-sitter
+.PHONY: all clean generate setup \
+	macos-arm64 macos-x64 linux-x64 linux-arm windows-x64 windows-arm
 
-# ----------------------------
-# Targets
-# ----------------------------
+# Default target: builds local architecture + standard cross-targets
+all: setup generate macos-arm64 macos-x64 linux-x64 windows-x64
 
-# Build: generate parser sources and build universal dylib
-build:
+setup:
+	@echo "Preparing build directory..."
+	@mkdir -p $(OUT_DIR)
+
+generate:
 	@echo "Generating parser sources with tree-sitter..."
-	@tree-sitter generate
+	@$(TS_CLI) generate
 	@echo "✅ Generated parser sources"
-	@mkdir -p $(BUILD_DIR) $(RELEASE_DIR)
-	@echo "Building universal dylib for macOS ($(ARCHS))..."
-	# Compile object files per architecture
-	@for arch in $(ARCHS); do \
-		for srcfile in $(SRC); do \
-			objfile=$(BUILD_DIR)/$$(basename $$srcfile .c)_$$arch.o; \
-			echo "  Compiling $$srcfile for $$arch -> $$objfile"; \
-			clang $(CFLAGS) -arch $$arch -c $$srcfile -o $$objfile; \
-		done; \
-	done
-	# Link universal dylib in a single command
-	@clang -dynamiclib $(BUILD_DIR)/*.o -o $(TARGET) $(LDFLAGS)
-	@echo "✅ Built universal dylib at $(TARGET)"
 
-# Install the dylib to a stable system path
-install: build
-	@echo "Installing $(NAME) dylib to $(LIBDIR)..."
-	@mkdir -p $(LIBDIR)
-	@cp $(TARGET) $(LIBDIR)/
-	@echo "✅ Installed $(LIBDIR)/$(NAME).dylib"
+# --- macOS (Single Platform Binaries) ---
+# Separated to simplify platform detection in the master application
+macos-arm64: setup
+	@echo "Building macOS ARM64 dylib..."
+	@$(ZIG) $(CFLAGS) -target aarch64-macos $(SRCS) -o $(OUT_DIR)/$(NAME)_macos_arm64.dylib
 
-# Remove build artifacts
+macos-x64: setup
+	@echo "Building macOS x86_64 dylib..."
+	@$(ZIG) $(CFLAGS) -target x86_64-macos $(SRCS) -o $(OUT_DIR)/$(NAME)_macos_x64.dylib
+
+# --- Linux ---
+# Targeting glibc 2.28 for broad distribution compatibility
+linux-x64: setup
+	@echo "Building Linux x64 shared object..."
+	@$(ZIG) $(CFLAGS) -target x86_64-linux-gnu.2.28 $(SRCS) -o $(OUT_DIR)/$(NAME)_linux_x64.so
+
+linux-arm: setup
+	@echo "Building Linux ARM64 shared object..."
+	@$(ZIG) $(CFLAGS) -target aarch64-linux-gnu.2.28 $(SRCS) -o $(OUT_DIR)/$(NAME)_linux_arm64.so
+
+# --- Windows ---
+# Zig internalizes MinGW headers, eliminating external dependencies
+windows-x64: setup
+	@echo "Building Windows x64 DLL..."
+	@$(ZIG) $(CFLAGS) -target x86_64-windows $(SRCS) -o $(OUT_DIR)/$(NAME)_x64.dll
+
+windows-arm: setup
+	@echo "Building Windows ARM64 DLL..."
+	@$(ZIG) $(CFLAGS) -target aarch64-windows $(SRCS) -o $(OUT_DIR)/$(NAME)_arm64.dll
+
 clean:
-	@echo "Cleaning build directory..."
-	@rm -rf $(BUILD_DIR)
-
-# ----------------------------
-# Phony targets
-# ----------------------------
-.PHONY: build install clean
-
+	@echo "Cleaning build artifacts..."
+	@rm -rf $(OUT_DIR)
+	@rm -f src/parser.c src/tree_sitter/parser.h
