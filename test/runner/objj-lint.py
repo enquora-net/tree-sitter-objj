@@ -4,13 +4,13 @@ Tree-sitter grammar test walker for Objective-J files.
 Tests all .j files in a directory tree against a tree-sitter grammar.
 """
 
-import argparse
-import ctypes
-import sys
-from pathlib import Path
-from typing import List, Optional, Tuple
+from    pathlib      import  Path
+from    tree_sitter  import  Language, Parser
+from    typing       import  List, Optional, Tuple
 
-from tree_sitter import Language, Parser
+import  argparse
+import  ctypes
+import  sys
 
 
 def find_grammar_library(language_name: str) -> Optional[Path]:

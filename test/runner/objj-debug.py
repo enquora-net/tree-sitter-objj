@@ -4,15 +4,15 @@ Tree-sitter parse tree debugger for Objective-J files.
 Stops at first error and displays full parse tree context.
 """
 
-import argparse
-import ctypes
-import subprocess
-import shlex
-import sys
-from pathlib import Path
-from typing import Optional, Tuple
+from    pathlib      import  Path
+from    tree_sitter  import  Language, Parser
+from    typing       import  Optional, Tuple
 
-from tree_sitter import Language, Parser
+import  argparse
+import  ctypes
+import  shlex
+import  subprocess
+import  sys
 
 
 def find_grammar_library(language_name: str) -> Optional[Path]:
