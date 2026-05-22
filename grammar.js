@@ -444,7 +444,7 @@ module.exports = grammar(JAVASCRIPT, {
 
     // One part of a method signature: nameFragment:(Type)paramName
     objj_method_parameter_part: $ => seq(
-      field('name_part', $.objj_selector_identifier),
+      optional(field('name_part', $.objj_selector_identifier)), // ← optional
       ':',
       optional(field('parameter_type', $.objj_method_type)),
       field('parameter_name', $.identifier),
