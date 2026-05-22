@@ -282,7 +282,7 @@ module.exports = grammar(JAVASCRIPT, {
       field('type', $.objj_type),
       field('name', $.identifier),
       optional(field('accessors', $.objj_accessors_directive)),
-      ';'
+      optional(';')
     ),
 
     objj_type: $ => choice(
