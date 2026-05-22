@@ -300,6 +300,10 @@ module.exports = grammar(JAVASCRIPT, {
       seq('unsigned', 'long', 'long'),
       'unsigned',
       'signed',
+      'long',
+      'short',
+      'char',
+      'int',
     ),
 
     objj_protocol_type: $ => seq(
