@@ -1,0 +1,6 @@
+In the manual test CGCanvasContext/AppController.j, line 75 uses var as an ivar declaration inside an @implementation ivar block:
+objj{
+    DiamondView _diamondView;
+    var         _lastSliderAngle;
+}
+var is not a valid Objective-J type for an instance variable. It is JavaScript variable declaration syntax and has no meaning in an ivar block. The suspicion is that this worked unreliably or by accident under the Objective-J runtime — possibly because the JavaScript engine scoped it as a global or simply ignored it — rather than being intentionally valid syntax. It has never been caught because manual tests are excluded from CI and no compiler or static analyser existed to reject it.
