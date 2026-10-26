@@ -5,7 +5,7 @@
 
 set -e
 
-VERSION=$(head -1 version.txt)
+VERSION=$(head -1 VERSION.txt)
 TAG="v${VERSION}"
 BUILD_DIR="./build"
 

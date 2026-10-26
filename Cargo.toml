@@ -1,7 +1,7 @@
 [package]
 name = "tree-sitter-objj"
 description = "A Javascript superset with support for classes and message passing"
-version = "0.1.0"
+version = "1.0.0-beta.2"
 authors = ["David Richardson <david.richardson@enquora.com>"]
 license = "LGPL v2.1"
 readme = "README.md"

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tree-sitter-objj"
 description = "A Javascript superset with support for classes and message passing"
-version = "0.1.0"
+version = "1.0.0-beta.2"
 keywords = ["incremental", "parsing", "tree-sitter", "objj"]
 classifiers = [
   "Intended Audience :: Developers",

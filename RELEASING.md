@@ -1,12 +1,12 @@
 ## Pushing a release
 
-Update `CHANGELOG.md` and `version.txt` before proceeding.
+Update `CHANGELOG.md` and `VERSION.txt` before proceeding.
 
 ```sh
-gh release create "$(cat version.txt)" build/* \
-    --title "$(cat version.txt)" \
+gh release create "$(cat VERSION.txt)" build/* \
+    --title "$(cat VERSION.txt)" \
     --notes-file CHANGELOG.md
 ```
 
-Pre-release versions are tagged automatically from `version.txt`. A version
+Pre-release versions are tagged automatically from `VERSION.txt`. A version
 of the form `1.0.0-beta.N` is published as a pre-release on GitHub.

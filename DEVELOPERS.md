@@ -4,20 +4,41 @@ macOS-focused. Linux instructions to follow.
 ---
 
 ## Quick start
-For grammar development only — verifying parse correctness and running tests without a full cross-platform build:
+For grammar development — verifying parse correctness and running tests:
 ```sh
 tree-sitter generate
-tree-sitter build
+tree-sitter test
 ```
 
+`tree-sitter test` and `tree-sitter parse` compile the grammar themselves; no separate build step is needed.
 
-`tree-sitter build` compiles the grammar using the system compiler and produces `tree-sitter-objj.dylib` in the current directory. This is the filename other toolchain components expect. For those tools to find it without manual configuration, copy it to the standard location:
+To use the grammar from other toolchain components, build the library with `make`. Only `make` compiles in the build version and checks the version files; a library built any other way, such as with `tree-sitter build`, has no build version and is not named as the toolchain expects. For this machine only:
 
 ```sh
-sudo cp tree-sitter-objj.dylib /usr/local/lib/
+make build
 ```
 
-This path is not a substitute for `make install-local`, which builds versioned release artifacts via Zig. Use this quick start only for grammar development and test iteration.
+This regenerates the parser if the grammar has changed, builds the library for this machine, and prints its path. Then install it in the per-user location, under the name the toolchain searches for:
+
+```sh
+DIR="$HOME/Library/Application Support/dev.cappuccino/grammar"
+mkdir -p "$DIR"
+cp build/tree-sitter-objj_macos_arm64_$(head -1 VERSION.txt).dylib "$DIR/libtree-sitter-objj.dylib"
+```
+
+On an Intel Mac, the library is `tree-sitter-objj_macos_x64_<version>.dylib`.
+
+A library in the per-user location takes precedence over one in `/usr/local/lib`, which is left in place. To install to `/usr/local/lib` instead, see [Installing locally](#installing-locally). For all install locations, see [Install locations](README.md#install-locations).
+
+---
+
+## `make` and the standard tree-sitter workflow
+
+This is a standard tree-sitter grammar with one addition for the Cappuccino toolchain: `src/version.c`, which exports the build version (`tree_sitter_objj_version`). It compiles only when given the version, which `make` supplies. Built without it, the compile stops with `TS_OBJJ_VERSION is not defined`.
+
+**Using the grammar in your own tool** — an editor, linter, code host or other third-party integration: use your usual tree-sitter workflow, such as `tree-sitter build`, the language bindings, or compiling `src/parser.c` and `src/scanner.c`. Do not compile `src/version.c`. If your build compiles every `.c` file in `src/`, exclude it. The release version remains available through tree-sitter's standard `ts_language_metadata()`.
+
+**Building libraries for the Cappuccino toolchain**: use `make`. Only `make` supplies the build version and checks that `tree-sitter.json` matches `VERSION.txt`.
 
 ---
 
@@ -35,7 +56,7 @@ zig version
 ```
 
 ### tree-sitter CLI
-Required to regenerate `src/parser.c` from `grammar.js`. The CLI requires Node.js 18 or later. If you use MacPorts:
+Required to regenerate `src/parser.c` from `grammar.js`. Version 0.25 or later is required: earlier versions do not compile the release version into the parser. The CLI requires Node.js 18 or later. If you use MacPorts:
 ```sh
 port install nodejs20
 ```
@@ -53,21 +74,30 @@ tree-sitter --version
 ---
 
 ## Building
+During development, build for this machine only:
 ```sh
-make
+make build
 ```
 
-Runs `tree-sitter generate` followed by a full cross-platform build for macOS, Linux, and Windows. All artifacts are written to `./build/`, versioned, and accompanied by individual SHA-256 checksum files.
+For a release, build all six platforms:
+```sh
+make build-all
+```
+
+`make` on its own is the same as `make build-all`. Both check that `tree-sitter.json` matches `VERSION.txt`, regenerate the parser if `grammar.js`, `tree-sitter.json` or the inherited JavaScript grammar has changed, and rebuild only the libraries whose sources or build version have changed. All artifacts are written to `./build/`, versioned. `make build-all` also writes a SHA-256 checksum file for each library. Each library carries the release version and the build version described in [Version](README.md#version).
+
+To regenerate the parser unconditionally, run `make generate`. A single platform can be built by name: `macos-arm64`, `macos-x64`, `linux-x64`, `linux-arm64`, `windows-x64`, `windows-arm64`.
 
 ---
 
 ## Installing locally
 For development and testing of other toolchain components against the current build:
 ```sh
+make build
 sudo make install-local
 ```
 
-Installs the appropriate library for the current host to `/usr/local/lib`. To remove:
+Building first, without `sudo`, keeps the build artifacts owned by you. `install-local` installs the library for the current host to `/usr/local/lib` as `libtree-sitter-objj.dylib` (macOS) or `libtree-sitter-objj.so` (Linux), the name the toolchain searches for. Any library already installed there under that name is replaced. A library in the per-user location takes precedence over it; see [Install locations](README.md#install-locations). To remove:
 ```sh
 sudo make uninstall-local
 ```
@@ -276,7 +306,9 @@ The grammar serves multiple consumers. The design constraint is that all share o
 
 ## Generated files
 
-The files `src/parser.c`, `src/tree_sitter/parser.h`, and `grammar.json` are **generated artefacts**. They are committed to the repository so that consumers can build without installing `tree-sitter-cli`, but they must never be edited by hand. Always edit `grammar.js` and regenerate.
+The files `src/parser.c`, `src/grammar.json`, `src/node-types.json`, and the headers in `src/tree_sitter/` are **generated artefacts**. They are not committed to the repository; `make` regenerates them whenever the grammar changes, so building requires `tree-sitter-cli`. They must never be edited by hand. Always edit `grammar.js` and regenerate.
+
+`src/scanner.c` and `src/version.c` are hand-written and committed.
 
 `grammar.json` is the serialised form of the compiled grammar DSL, consumed by downstream binding generators and language server integrations. It is the file from which the node type index (`src/node-types.json`) and the grammar schema are derived.
 
@@ -302,4 +334,4 @@ The grammar does not depend on, and should not be confused with, any Objective-C
 
 ## Version
 
-The current version is the first line of `VERSION.txt`. Increment it before cutting a release. Pre-release versions follow semver convention: `2.0.0-beta.1`, `2.0.0-beta.2`, and so on.
+The current version is the first line of `VERSION.txt`. Increment it before cutting a release. Pre-release versions follow semver convention: `1.0.0-beta.1`, `1.0.0-beta.2`, and so on. The steps for changing it are in [How the version is set](README.md#how-the-version-is-set).
