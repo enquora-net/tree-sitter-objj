@@ -334,4 +334,4 @@ The grammar does not depend on, and should not be confused with, any Objective-C
 
 ## Version
 
-The current version is the first line of `VERSION.txt`. Increment it before cutting a release. Pre-release versions follow semver convention: `1.0.0-beta.1`, `1.0.0-beta.2`, and so on. The steps for changing it are in [How the version is set](README.md#how-the-version-is-set).
+The current version is the first line of `VERSION.txt`. Increment it before cutting a release. The major version follows Cappuccino 2 rather than counting grammar releases; see [Version](README.md#version). Pre-release versions follow semver convention: `2.0.0-beta.2`, `2.0.0-beta.3`, and so on. The steps for changing it are in [How the version is set](README.md#how-the-version-is-set).

@@ -68,7 +68,7 @@ current machine.
 ```sh
 DIR="$HOME/Library/Application Support/dev.cappuccino/grammar"
 mkdir -p "$DIR"
-cp tree-sitter-objj_macos_arm64_1.0.0-beta.2.dylib "$DIR/libtree-sitter-objj.dylib"
+cp tree-sitter-objj_macos_arm64_2.0.0-beta.2.dylib "$DIR/libtree-sitter-objj.dylib"
 ```
 
 Gatekeeper quarantines downloaded files. Strip the attribute before use:
@@ -83,8 +83,8 @@ Each release file has a matching `.sha256` file holding its SHA-256 checksum.
 The two lines printed by these commands must be identical:
 
 ```sh
-shasum -a 256 tree-sitter-objj_macos_arm64_1.0.0-beta.2.dylib | cut -d' ' -f1
-cat tree-sitter-objj_macos_arm64_1.0.0-beta.2.dylib.sha256
+shasum -a 256 tree-sitter-objj_macos_arm64_2.0.0-beta.2.dylib | cut -d' ' -f1
+cat tree-sitter-objj_macos_arm64_2.0.0-beta.2.dylib.sha256
 ```
 
 ### Confirming the installation
@@ -101,12 +101,19 @@ the library in use is missing, cannot be loaded, or is older than it accepts.
 
 ## Version
 
+Version numbers follow Cappuccino 2: the major version is the Cappuccino
+version whose Objective-J the grammar covers, not a count of grammar releases.
+The first release was published as `1.0.0-beta.1`; numbering moved to 2.0.0
+from `2.0.0-beta.2`, continuing the beta sequence. Breaking changes to node
+types or field names are announced in the [changelog](CHANGELOG.md), not by a
+change of major version.
+
 Each library reports its version in two ways.
 
 **Release version.** Tree-sitter's standard metadata, readable by any
 tree-sitter consumer: `ts_language_metadata()` in C, `Metadata()` in
 go-tree-sitter 0.25. It holds major, minor and patch numbers only, so
-`1.0.0-beta.2` reports `1.0.0`. It comes from `tree-sitter.json`, and is
+`2.0.0-beta.2` reports `2.0.0`. It comes from `tree-sitter.json`, and is
 present only in libraries generated with tree-sitter CLI 0.25 or later.
 
 **Build version.** An exported function:
@@ -116,29 +123,30 @@ const char *tree_sitter_objj_version(void);
 ```
 
 It returns the full version and the commit the library was built from, for
-example `1.0.0-beta.2+gd434afd2ab1c`. The `+g<commit>` part is omitted when the
+example `2.0.0-beta.2+g<commit>`, where `<commit>` is the first 12 characters
+of the commit hash. The `+g<commit>` part is omitted when the
 library is built outside a git checkout. Changes not yet committed when the
 library was built are not reflected.
 
-Libraries before `1.0.0-beta.2` do not export `tree_sitter_objj_version`; a
+Libraries released before `2.0.0-beta.2` do not export `tree_sitter_objj_version`; a
 consumer should treat its absence as an outdated library.
 
 ### How the version is set
 
 The first line of `VERSION.txt` is the single source of the version.
 
-1. Edit the first line of `VERSION.txt`, e.g. `1.0.0-beta.3`.
+1. Edit the first line of `VERSION.txt`, e.g. `2.0.0-beta.3`.
 2. Copy it into the package manifests:
 
    ```sh
-   tree-sitter version 1.0.0-beta.3
+   tree-sitter version 2.0.0-beta.3
    ```
 
    This updates `tree-sitter.json`, `package.json`, `Cargo.toml`,
    `pyproject.toml` and `CMakeLists.txt`.
-3. In `CMakeLists.txt`, drop the pre-release part, e.g. `1.0.0`. CMake accepts
+3. In `CMakeLists.txt`, drop the pre-release part, e.g. `2.0.0`. CMake accepts
    numbers only.
-4. Add a `CHANGELOG.md` entry headed `## 1.0.0-beta.3`.
+4. Add a `CHANGELOG.md` entry headed `## 2.0.0-beta.3`, followed by the release date.
 5. Build:
 
    ```sh

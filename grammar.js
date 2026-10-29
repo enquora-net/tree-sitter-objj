@@ -80,8 +80,14 @@ module.exports = grammar(JAVASCRIPT, {
     $.comment
   ],
 
-  conflicts: ($, original) => original.concat([
-    [$.objj_message_expression, $.array],
+  conflicts: ($, original) => original
+  // Inherited conflicts this grammar no longer needs: native_array
+  // replaces array in these positions.
+  .filter(conflict => ![
+    'array,array_pattern',
+    'array,computed_property_name',
+  ].includes(conflict.map(rule => rule.name).sort().join(',')))
+  .concat([
     [$.statement, $.preproc_if_block],
     [$.binary_expression, $.objj_message_keyword_argument],
     [$.primary_expression, $.function_expression, $.generator_function],
@@ -94,9 +100,8 @@ module.exports = grammar(JAVASCRIPT, {
     // disambiguates. The upstream JS grammar has the identical entry for
     // computed_property_name vs array; native_array replaces array here.
     [$.computed_property_name, $.native_array],
-
   ]),
-
+  
   rules: {
     statement: ($, original) => choice(
       original,

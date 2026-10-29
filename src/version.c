@@ -9,7 +9,7 @@
  * ============================================================================
  * Exports the build version for consumers that load the library at run time.
  * TS_OBJJ_VERSION is supplied by the Makefile: the first line of VERSION.txt,
- * plus "+g<commit>" when built from a git checkout, e.g. 1.0.0-beta.2+gabc123.
+ * plus "+g<commit>" when built from a git checkout, e.g. 2.0.0-beta.2+gabc123.
  *
  * The X.Y.Z part is also available through tree-sitter's standard
  * ts_language_metadata(), generated from tree-sitter.json.

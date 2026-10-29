@@ -38,7 +38,7 @@ GRAMMAR_SRCS := grammar.js tree-sitter.json \
 
 # Records the build version; touched only when it changes, so a new commit
 # rebuilds the libraries even when no source has changed
-VERSION_STAMP := $(OUT_DIR)/.build-version
+BUILD_STAMP := $(OUT_DIR)/.build-version
 
 # Libraries, one per platform
 LIB_MACOS_ARM64   := $(OUT_DIR)/$(NAME)_macos_arm64_$(GRAMMAR_VERSION).dylib
@@ -129,13 +129,13 @@ generate: check-version
 
 # Also creates OUT_DIR. (A rule for OUT_DIR itself would clash with the
 # build target: make treats ./build and build as the same name.)
-$(VERSION_STAMP): FORCE
+$(BUILD_STAMP): FORCE
 	@mkdir -p $(OUT_DIR)
 	@echo '$(BUILD_VERSION)' | cmp -s - $@ || echo '$(BUILD_VERSION)' > $@
 
 FORCE:
 
-LIB_DEPS := $(SRCS) $(VERSION_STAMP)
+LIB_DEPS := $(SRCS) $(BUILD_STAMP)
 
 # --- macOS ---
 macos-arm64: $(LIB_MACOS_ARM64)

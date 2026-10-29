@@ -14,7 +14,7 @@
     }
   ],
   "metadata": {
-    "version": "1.0.0-beta.2",
+    "version": "2.0.0-beta.2",
     "license": "MIT",
     "description": "A Javascript superset with support for classes and message passing",
     "authors": [

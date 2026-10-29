@@ -9,4 +9,4 @@ gh release create "$(cat VERSION.txt)" build/* \
 ```
 
 Pre-release versions are tagged automatically from `VERSION.txt`. A version
-of the form `1.0.0-beta.N` is published as a pre-release on GitHub.
+of the form `2.0.0-beta.N` is published as a pre-release on GitHub.
